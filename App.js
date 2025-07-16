@@ -430,6 +430,9 @@ function App() {
     const [aiStudyTips, setAiStudyTips] = useState('');
     const [isGeneratingTips, setIsGeneratingTips] = useState(false);
 
+    // Ref to store the stringified version of semesters that was last used to generate tips
+    const lastProcessedSemestersRef = useRef(null);
+
 
     // --- Data Persistence (Local Storage) ---
     // Load data from localStorage on component mount
@@ -454,28 +457,11 @@ function App() {
         }
     }, [semesters]);
 
-    // Effect to update overall CGPA and total credit units whenever semesters change
-    useEffect(() => {
-        const { cgpa, totalCreditUnits } = calculateCGPA(semesters);
-        setOverallCgpa(cgpa);
-        setTotalCreditUnitsAccumulated(totalCreditUnits);
-
-        // Trigger AI study tips generation after CGPA update, if there's data
-        // Only generate if semesters array is not empty and not already generating
-        if (semesters.length > 0 && !isGeneratingTips) {
-            generateStudyTipsBasedOnPerformance();
-        } else if (semesters.length === 0 && aiStudyTips) {
-            // If all semesters are cleared, hide and clear tips
-            setShowStudyTipsModal(false);
-            setAiStudyTips('');
-        }
-    }, [semesters]);
-
-
     // --- AI Study Tips Generation ---
-    const generateStudyTipsBasedOnPerformance = async () => {
+    // This function only generates the tips, it no longer handles modal visibility
+    const generateStudyTipsBasedOnPerformance = async (currentSemesters) => {
         setIsGeneratingTips(true);
-        const { strengths, weaknesses } = analyzeAcademicPerformance(semesters);
+        const { strengths, weaknesses } = analyzeAcademicPerformance(currentSemesters);
 
         let prompt = `I am a university student with a current CGPA of ${overallCgpa} on a 5.0 scale.`;
 
@@ -498,9 +484,36 @@ function App() {
 
         const tips = await getAIGeneratedResponse(prompt);
         setAiStudyTips(tips);
-        setShowStudyTipsModal(true);
         setIsGeneratingTips(false);
     };
+
+    // Effect to update overall CGPA, total credit units, and trigger AI tip generation
+    useEffect(() => {
+        const { cgpa, totalCreditUnits } = calculateCGPA(semesters);
+        setOverallCgpa(cgpa);
+        setTotalCreditUnitsAccumulated(totalCreditUnits);
+
+        const currentSemestersString = JSON.stringify(semesters);
+
+        // Trigger AI study tips generation if semesters data has changed and there's data
+        // and we're not currently generating tips
+        if (semesters.length > 0 && currentSemestersString !== lastProcessedSemestersRef.current && !isGeneratingTips) {
+            generateStudyTipsBasedOnPerformance(semesters);
+            lastProcessedSemestersRef.current = currentSemestersString; // Store the state that triggered this generation
+        } else if (semesters.length === 0 && aiStudyTips) {
+            // If all semesters are cleared, hide and clear tips
+            setShowStudyTipsModal(false);
+            setAiStudyTips('');
+            lastProcessedSemestersRef.current = null; // Reset ref if data is cleared
+        }
+    }, [semesters, isGeneratingTips, overallCgpa, aiStudyTips]); // Added aiStudyTips to dependencies to ensure effect runs if it clears.
+
+    // Effect to show the modal *only* when new AI tips are ready and generation is complete
+    useEffect(() => {
+        if (aiStudyTips && !isGeneratingTips) {
+            setShowStudyTipsModal(true);
+        }
+    }, [aiStudyTips, isGeneratingTips]);
 
 
     // --- Handlers for current semester input ---
@@ -691,7 +704,7 @@ function App() {
                                 key={course.id}
                                 course={course}
                                 onCourseChange={handleCourseChange}
-                                onRemoveCourse={handleCourseRow}
+                                onRemoveCourse={handleRemoveCourseRow} {/* Fixed typo here */}
                             />
                         ))}
                     </div>
