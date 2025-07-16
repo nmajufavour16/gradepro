@@ -2,7 +2,7 @@ const { useState, useEffect, useRef } = React;
 const { createRoot } = ReactDOM;
 
 // --- API Key (Canvas will inject this at runtime) ---
-const API_KEY = ""; // Leave this empty, Canvas will provide it.
+const API_KEY = "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"; // Leave this empty, Canvas will provide it.
 
 // --- Core Calculation Functions ---
 /**
