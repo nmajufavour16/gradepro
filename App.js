@@ -2,7 +2,7 @@ const { useState, useEffect, useRef } = React;
 const { createRoot } = ReactDOM;
 
 // --- API Key (Canvas will inject this at runtime) ---
-const API_KEY = "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"; // Leave this empty, Canvas will provide it.
+const API_KEY = ""; // Leave this empty, Canvas will provide it.
 
 // --- Core Calculation Functions ---
 /**
@@ -136,28 +136,53 @@ const generateId = () => Math.random().toString(36).substr(2, 9);
 
 // --- AI Helper Functions ---
 async function getAIGeneratedResponse(prompt, chatHistory = []) {
+    // --- IMPORTANT: Your OpenRouter API Key ---
+    // WARNING: Directly embedding API keys in client-side code is insecure.
+    // For production, consider using a backend proxy to protect your API key.
+    const OPENROUTER_API_KEY = "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";
+
+    const openRouterApiUrl = "https://openrouter.ai/api/v1/chat/completions";
+
+    // OpenRouter uses the OpenAI-compatible chat completion format
+    const messages = chatHistory.map(msg => ({
+        role: msg.role === 'model' ? 'assistant' : msg.role, // OpenRouter expects 'assistant' for model responses
+        content: msg.parts[0].text // Assuming parts[0].text is always present
+    }));
+    messages.push({ role: "user", content: prompt });
+
     const payload = {
-        contents: [...chatHistory, { role: "user", parts: [{ text: prompt }] }],
+        model: "openrouter/auto", // Or specify a particular model, e.g., "google/gemini-pro"
+        messages: messages,
+        // You can add other parameters like temperature, max_tokens here if needed
+        // temperature: 0.7,
+        // max_tokens: 150,
     };
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
     try {
-        const response = await fetch(apiUrl, {
+        const response = await fetch(openRouterApiUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENROUTER_API_KEY}`
+            },
             body: JSON.stringify(payload)
         });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("OpenRouter API error response:", errorText);
+            throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+        }
+
         const result = await response.json();
-        if (result.candidates && result.candidates.length > 0 &&
-            result.candidates[0].content && result.candidates[0].content.parts &&
-            result.candidates[0].content.parts.length > 0) {
-            return result.candidates[0].content.parts[0].text;
+        if (result.choices && result.choices.length > 0 && result.choices[0].message && result.choices[0].message.content) {
+            return result.choices[0].message.content;
         } else {
-            console.error("Unexpected AI response structure:", result);
+            console.error("Unexpected AI response structure from OpenRouter:", result);
             return "Sorry, I couldn't generate a response. Please try again.";
         }
     } catch (error) {
-        console.error("Error calling Gemini API:", error);
+        console.error("Error calling OpenRouter API:", error);
         return "I'm having trouble connecting to my brain right now. Please try again later.";
     }
 }
@@ -721,7 +746,7 @@ function App() {
                             placeholder="e.g., 6"
                             min="1"
                             value={numberOfProjectedCoursesInput}
-                            onChange={(e) => setNumberOfProjectedCoursesInput(e.target.value)}
+                            onChange={(e) => setNumberOfProjectedCourses(e.target.value)}
                         />
                     </div>
                     <button id="calculateProjectedBtn" onClick={handleCalculateProjectedCgpa}>
