@@ -2,7 +2,7 @@ const { useState, useEffect, useRef } = React;
 const { createRoot } = ReactDOM;
 
 // --- API Key (Canvas will inject this at runtime) ---
-const API_KEY = ""; // Leave this empty, Canvas will provide it.
+const API_KEY = ""; // Leave this empty, Canvas will provide it. This is not used for OpenRouter API calls.
 
 // --- Core Calculation Functions ---
 /**
@@ -139,33 +139,35 @@ async function getAIGeneratedResponse(prompt, chatHistory = []) {
     // --- IMPORTANT: Your OpenRouter API Key ---
     // WARNING: Directly embedding API keys in client-side code is insecure.
     // For production, consider using a backend proxy to protect your API key.
-    const OPENROUTER_API_KEY = "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";
+    const OPENROUTER_API_KEY = "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";
 
     const openRouterApiUrl = "https://openrouter.ai/api/v1/chat/completions";
 
-    // OpenRouter uses the OpenAI-compatible chat completion format
+    // OpenRouter expects messages in the format { role: 'user' | 'assistant', content: '...' }
+    // Adjusting chatHistory to match this format
     const messages = chatHistory.map(msg => ({
-        role: msg.role === 'model' ? 'assistant' : msg.role, // OpenRouter expects 'assistant' for model responses
+        role: msg.role === 'model' ? 'assistant' : msg.role, // Convert 'model' role to 'assistant'
         content: msg.parts[0].text // Assuming parts[0].text is always present
     }));
+    // Add the current user prompt
     messages.push({ role: "user", content: prompt });
-
-    const payload = {
-        model: "openrouter/auto", // Or specify a particular model, e.g., "google/gemini-pro"
-        messages: messages,
-        // You can add other parameters like temperature, max_tokens here if needed
-        // temperature: 0.7,
-        // max_tokens: 150,
-    };
 
     try {
         const response = await fetch(openRouterApiUrl, {
             method: 'POST',
             headers: {
+                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                'HTTP-Referer': 'https://gradepro.vercel.app', // Your app's URL for OpenRouter rankings
+                'X-Title': 'GradePro NG - CGPA Calculator and AI Study Help', // Your app's title
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENROUTER_API_KEY}`
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+                model: 'deepseek/deepseek-r1-0528:free', // Specified model
+                messages: messages,
+                // You can add other parameters like temperature, max_tokens here if needed
+                // temperature: 0.7,
+                // max_tokens: 150,
+            }),
         });
 
         if (!response.ok) {
@@ -689,7 +691,7 @@ function App() {
                                 key={course.id}
                                 course={course}
                                 onCourseChange={handleCourseChange}
-                                onRemoveCourse={handleRemoveCourseRow}
+                                onRemoveCourse={handleCourseRow}
                             />
                         ))}
                     </div>
@@ -746,7 +748,7 @@ function App() {
                             placeholder="e.g., 6"
                             min="1"
                             value={numberOfProjectedCoursesInput}
-                            onChange={(e) => setNumberOfProjectedCourses(e.target.value)}
+                            onChange={(e) => setNumberOfProjectedCoursesInput(e.target.value)}
                         />
                     </div>
                     <button id="calculateProjectedBtn" onClick={handleCalculateProjectedCgpa}>
