@@ -156,7 +156,7 @@ async function getAIGeneratedResponse(prompt, chatHistory = []) {
         const response = await fetch(openRouterApiUrl, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                'Authorization': `Bearer ${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}`,
                 'HTTP-Referer': 'https://gradepro.vercel.app', // Your app's URL for OpenRouter rankings
                 'X-Title': 'GradePro NG - CGPA Calculator and AI Study Help', // Your app's title
                 'Content-Type': 'application/json',
@@ -164,9 +164,6 @@ async function getAIGeneratedResponse(prompt, chatHistory = []) {
             body: JSON.stringify({
                 model: 'deepseek/deepseek-r1-0528:free', // Specified model
                 messages: messages,
-                // You can add other parameters like temperature, max_tokens here if needed
-                // temperature: 0.7,
-                // max_tokens: 150,
             }),
         });
 
@@ -369,7 +366,7 @@ function AIChatbot({ semesters, overallCgpa, totalCreditUnitsAccumulated }) {
                     </span>
                 ) : null}
                 <span className="ai-icon">
-                    🤖 {/* Smiling robot emoji as AI icon */}
+                     {/* Smiling robot emoji as AI icon */}
                 </span>
             </button>
 
