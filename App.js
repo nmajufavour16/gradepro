@@ -1007,7 +1007,3 @@ function App() {
         </div>
     );
 
-// Mount the React app to the DOM
-const container = document.getElementById('root');
-const root = createRoot(container);
-root.render(<App />);
