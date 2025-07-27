@@ -1,5 +1,15 @@
 {
-  "buildCommand": "CI=false npm run build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "functions": {
+    "src/api/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "build": {
+    "env": {
+      "NODE_VERSION": "18"
+    }
+  }
 }
