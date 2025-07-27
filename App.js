@@ -1,10 +1,5 @@
-const { useState, useEffect, useRef } = React;
-const { createRoot } = ReactDOM;
+import React, { useState, useEffect, useRef } from 'react';
 import courseDB from './courses.json';
-import html2pdf from 'html2pdf.js';
-
-// --- API Key (Canvas will inject this at runtime) ---
-const API_KEY = "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"; // Leave this empty, Canvas will provide it. This is not used for OpenRouter API calls.
 
 // --- Core Calculation Functions ---
 /**
@@ -129,7 +124,6 @@ function calculateAverageCreditUnitPerCourse(allSemesters) {
     return totalCreditUnits / totalCoursesCount;
 }
 
-
 /**
  * Generates a simple unique ID for list items.
  * @returns {string} A unique ID string.
@@ -185,7 +179,6 @@ async function getAIGeneratedResponse(prompt, chatHistory = []) {
         return "I'm having trouble connecting to my brain right now. Please try again later.";
     }
 }
-
 
 /**
  * Analyzes academic performance to identify strengths and weaknesses.
@@ -258,7 +251,7 @@ function CourseInputRow({ course, onCourseChange, onRemoveCourse, availableCours
                 <option value="E">E</option>
                 <option value="F">F</option>
             </select>
-            <select onChange={e => onAddFromDropdown(e)}>
+            <select onChange={onAddFromDropdown}>
                 <option value="">Select course...</option>
                 {availableCourses.map(course => (
                     <option key={course.name} value={`${course.name}|${course.creditUnit}`}>
@@ -271,25 +264,6 @@ function CourseInputRow({ course, onCourseChange, onRemoveCourse, availableCours
     );
 }
 
-const availableCourses = courseDB[selectedLevel]?.[selectedSemesterType] || [];
-
-const handleAddFromDropdown = (e) => {
-    const [name, creditUnit] = e.target.value.split("|");
-    if (!name) return;
-    setCurrentSemesterCourses([...currentSemesterCourses, {
-        id: generateId(),
-        name,
-        creditUnit: parseInt(creditUnit),
-        grade: ''
-    }]);
-};
-
-// Add export to PDF functionality
-const handleExportPdf = () => {
-    const element = document.querySelector("main");
-    html2pdf().from(element).save("CGPA_Summary.pdf");
-};
-
 // --- SemesterSummary Component ---
 function SemesterSummary({ semester, sgpa, onDeleteSemester }) {
     return (
@@ -297,7 +271,6 @@ function SemesterSummary({ semester, sgpa, onDeleteSemester }) {
             <div className="semester-header-controls">
                  <h4>{semester.semesterName}: SGPA = {sgpa}</h4>
                  <div className="semester-buttons">
-                     {/* Placeholder for Edit button - functionality to be added later */}
                      <button className="edit-semester-btn" onClick={() => alert('Edit functionality coming soon!')}>Edit</button>
                      <button className="delete-semester-btn" onClick={() => onDeleteSemester(semester.id)}>Delete</button>
                  </div>
@@ -313,12 +286,12 @@ function SemesterSummary({ semester, sgpa, onDeleteSemester }) {
     );
 }
 
- // --- AI Study Tips Modal Component ---
-        function StudyTipsModal({ tips, onClose }) {
-            if (!tips) return null;
-            return (
-                <div className="modal-overlay">
-                    <div className="modal-content">
+// --- AI Study Tips Modal Component ---
+function StudyTipsModal({ tips, onClose }) {
+    if (!tips) return null;
+    return (
+        <div className="modal-overlay">
+            <div className="modal-content">
                 <h3>Personalized Study Tips from AI</h3>
                 <p className="description-text">Here are some tips based on your academic performance:</p>
                 <div className="study-tips-content" dangerouslySetInnerHTML={{ __html: tips.replace(/\n/g, '<br>') }}></div>
@@ -327,10 +300,6 @@ function SemesterSummary({ semester, sgpa, onDeleteSemester }) {
         </div>
     );
 }
-        // Ensure the modal close logic works
-        {showStudyTipsModal && (
-            <StudyTipsModal tips={aiStudyTips} onClose={() => setShowStudyTipsModal(false)} />
-        )}
 
 // --- AI Chatbot Component ---
 function AIChatbot({ semesters, overallCgpa, totalCreditUnitsAccumulated }) {
@@ -339,7 +308,7 @@ function AIChatbot({ semesters, overallCgpa, totalCreditUnitsAccumulated }) {
     const [chatInput, setChatInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showWelcome, setShowWelcome] = useState(true);
-    const chatMessagesRef = useRef(null); // Ref for scrolling chat
+    const chatMessagesRef = useRef(null);
 
     // Scroll to bottom of chat messages when history updates
     useEffect(() => {
@@ -352,7 +321,7 @@ function AIChatbot({ semesters, overallCgpa, totalCreditUnitsAccumulated }) {
     useEffect(() => {
         const welcomeTimer = setTimeout(() => {
             setShowWelcome(false);
-        }, 5000); // Show welcome for 5 seconds
+        }, 5000);
 
         return () => clearTimeout(welcomeTimer);
     }, []);
@@ -457,22 +426,22 @@ function App() {
     const [aiStudyTips, setAiStudyTips] = useState('');
     const [isGeneratingTips, setIsGeneratingTips] = useState(false);
 
-    // Course dropdown integration in App() component:
-    const availableCourses = courseDB[selectedLevel]?.[selectedSemesterType] || [];
-    const handleAddFromDropdown = (e) => {
-    const [name, creditUnit] = e.target.value.split("|");
-    if (!name) return;
-    setCurrentSemesterCourses([...currentSemesterCourses, {
-        id: generateId(),
-        name,
-        creditUnit: parseInt(creditUnit),
-        grade: ''
-    }]);
-    };
-
     // Ref to store the stringified version of semesters that was last used to generate tips
     const lastProcessedSemestersRef = useRef(null);
 
+    // Course dropdown integration
+    const availableCourses = courseDB[selectedLevel]?.[selectedSemesterType] || [];
+    
+    const handleAddFromDropdown = (e) => {
+        const [name, creditUnit] = e.target.value.split("|");
+        if (!name) return;
+        setCurrentSemesterCourses([...currentSemesterCourses, {
+            id: generateId(),
+            name,
+            creditUnit: parseInt(creditUnit),
+            grade: ''
+        }]);
+    };
 
     // --- Data Persistence (Local Storage) ---
     // Load data from localStorage on component mount
@@ -498,7 +467,6 @@ function App() {
     }, [semesters]);
 
     // --- AI Study Tips Generation ---
-    // This function only generates the tips, it no longer handles modal visibility
     const generateStudyTipsBasedOnPerformance = async (currentSemesters) => {
         setIsGeneratingTips(true);
         const { strengths, weaknesses } = analyzeAcademicPerformance(currentSemesters);
@@ -536,25 +504,22 @@ function App() {
         const currentSemestersString = JSON.stringify(semesters);
 
         // Trigger AI study tips generation if semesters data has changed and there's data
-        // and we're not currently generating tips
         if (semesters.length > 0 && currentSemestersString !== lastProcessedSemestersRef.current && !isGeneratingTips) {
             generateStudyTipsBasedOnPerformance(semesters);
-            lastProcessedSemestersRef.current = currentSemestersString; // Store the state that triggered this generation
+            lastProcessedSemestersRef.current = currentSemestersString;
         } else if (semesters.length === 0 && aiStudyTips) {
-            // If all semesters are cleared, hide and clear tips
             setShowStudyTipsModal(false);
             setAiStudyTips('');
-            lastProcessedSemestersRef.current = null; // Reset ref if data is cleared
+            lastProcessedSemestersRef.current = null;
         }
-    }, [semesters, isGeneratingTips, overallCgpa, aiStudyTips]); // Added aiStudyTips to dependencies to ensure effect runs if it clears.
+    }, [semesters, isGeneratingTips, overallCgpa, aiStudyTips]);
 
-    // Effect to show the modal *only* when new AI tips are ready and generation is complete
+    // Effect to show the modal when new AI tips are ready
     useEffect(() => {
         if (aiStudyTips && !isGeneratingTips) {
             setShowStudyTipsModal(true);
         }
     }, [aiStudyTips, isGeneratingTips]);
-
 
     // --- Handlers for current semester input ---
     const handleAddCourseRow = () => {
@@ -584,8 +549,8 @@ function App() {
         }
 
         const hasInvalidPartialRow = currentSemesterCourses.some(c =>
-            (c.name.trim() || c.creditUnit > 0 || c.grade) && // Has some data
-            (!c.name.trim() || isNaN(c.creditUnit) || c.creditUnit <= 0 || !c.grade) // But is incomplete/invalid
+            (c.name.trim() || c.creditUnit > 0 || c.grade) &&
+            (!c.name.trim() || isNaN(c.creditUnit) || c.creditUnit <= 0 || !c.grade)
         );
 
         if (hasInvalidPartialRow) {
@@ -600,7 +565,6 @@ function App() {
         };
 
         setSemesters(prevSemesters => [...prevSemesters, newSemester]);
-
         setCurrentSemesterCourses([{ id: generateId(), name: '', creditUnit: 1, grade: '' }]);
     };
 
@@ -618,172 +582,10 @@ function App() {
             setTargetOverallCgpaInput('');
             setNumberOfProjectedCoursesInput('');
             setProjectedCoursesResults([]);
-            setAiStudyTips(''); // Clear AI tips as well
+            setAiStudyTips('');
             alert("All data cleared successfully!");
         }
     };
-
-    return (
-        <div>
-            <header>
-                <h1>GradePro NG</h1>
-                <p>Your academic progress, simplified.</p>
-            </header>
-
-            <main>
-                <section className="semester-input">
-                    <h2>Add Semester Courses</h2>
-                    <div className="input-group">
-                        <label htmlFor="levelSelect">Level:</label>
-                        <select
-                            id="levelSelect"
-                            value={selectedLevel}
-                            onChange={(e) => setSelectedLevel(e.target.value)}
-                        >
-                            <option value="100 Level">100 Level</option>
-                            <option value="200 Level">200 Level</option>
-                            <option value="300 Level">300 Level</option>
-                            <option value="400 Level">400 Level</option>
-                            <option value="500 Level">500 Level</option>
-                        </select>
-                    </div>
-                    <div className="input-group">
-                        <label htmlFor="semesterTypeSelect">Semester Type:</label>
-                        <select
-                            id="semesterTypeSelect"
-                            value={selectedSemesterType}
-                            onChange={(e) => setSelectedSemesterType(e.target.value)}
-                        >
-                            <option value="First Semester">First Semester</option>
-                            <option value="Second Semester">Second Semester</option>
-                        </select>
-                    </div>
-                    <div className="input-group">
-                        <label>Semester Name:</label>
-                        <input
-                            type="text"
-                            id="generatedSemesterName"
-                            value={`${selectedLevel} - ${selectedSemesterType}`}
-                            readOnly
-                            className="read-only-input"
-                        />
-                    </div>
-
-                    <div id="coursesContainer">
-                        {currentSemesterCourses.map(course => (
-                            <CourseInputRow
-                                key={course.id}
-                                course={course}
-                                onCourseChange={handleCourseChange}
-                                onRemoveCourse={handleRemoveCourseRow}
-                                availableCourses={availableCourses}
-                                onAddFromDropdown={handleAddFromDropdown}
-                            />
-                        ))}
-                    </div>
-                    <button id="addCourseBtn" onClick={handleAddCourseRow}>Add Another Course</button>
-                    <button id="addSemesterBtn" onClick={handleAddSemester}>Calculate Semester & Add</button>
-                </section>
-
-                <section className="results">
-                    <h2>Your Academic Summary</h2>
-                    <div id="semesterResults">
-                        {semesters.length === 0 ? (
-                            <p className="no-data-message">No semesters added yet. Start by adding your first semester!</p>
-                        ) : (
-                            semesters.map(sem => (
-                                <SemesterSummary
-                                    key={sem.id}
-                                    semester={sem}
-                                    sgpa={calculateSGPA(sem.courses)}
-                                    onDeleteSemester={handleDeleteSemester}
-                                />
-                            ))
-                        )}
-                    </div>
-                    <div className="overall-cgpa">
-                        <h3>Overall CGPA: <span id="overallCgpa">{overallCgpa}</span></h3>
-                    </div>
-                     <button className="clear-all-data-btn" onClick={handleClearAllData}>Clear All My Data</button>
-                </section>
-
-
-                <section className="target-cgpa-calculator">
-                    <h2>Projected CGPA for Next Semester/Level</h2>
-                    <p className="description-text">
-                        See what average grade you need in your upcoming semester/level to achieve a target overall CGPA!
-                    </p>
-                    <div className="input-group">
-                        <label htmlFor="targetOverallCgpa">Target Overall CGPA After Next Semester/Level:</label>
-                        <input
-                            type="number"
-                            id="targetOverallCgpa"
-                            placeholder="e.g., 4.50"
-                            min="0.00"
-                            max="5.00"
-                            step="0.01"
-                            value={targetOverallCgpaInput}
-                            onChange={(e) => setTargetOverallCgpaInput(e.target.value)}
-                        />
-                    </div>
-                    <div className="input-group">
-                        <label htmlFor="numberOfProjectedCourses">Number of Courses in Next Semester/Level:</label>
-                        <input
-                            type="number"
-                            id="numberOfProjectedCourses"
-                            placeholder="e.g., 6"
-                            min="1"
-                            value={numberOfProjectedCoursesInput}
-                            onChange={(e) => setNumberOfProjectedCoursesInput(e.target.value)}
-                        />
-                    </div>
-                    <button id="calculateProjectedBtn" onClick={handleCalculateProjectedCgpa}>
-                        Calculate Projected Grades
-                    </button>
-                    <div className="prediction-result">
-                        {projectedCoursesResults.length === 0 ? (
-                            <p>Enter details above to see projected grades.</p>
-                        ) : projectedCoursesResults[0].name === 'Calculation Error' ? (
-                            <p className="error-message">Error in calculation. Please check inputs.</p>
-                        ) : projectedCoursesResults[0].name === 'Unrealistic Target' ? (
-                            <p className="error-message">Target is {projectedCoursesResults[0].requiredGrade}. Consider adjusting your desired CGPA or number of courses.</p>
-                        ) : (
-                            <>
-                                <p>To achieve your target, you need an average SGPA of <span className="highlight">{calculateSGPA(projectedCoursesResults.map(pc => ({creditUnit: pc.creditUnit, grade: getLetterGrade(getGradePoint(pc.requiredGrade))})))}</span> in the next semester/level. This translates to:</p>
-                                <ul>
-                                    {projectedCoursesResults.map((course, index) => (
-                                        <li key={index}>
-                                            <span className="highlight">{course.name}</span> ({course.creditUnit} units): <span className="highlight">{course.requiredGrade}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </>
-                        )}
-                    </div>
-                </section>
-
-                {/* Render PDF download button */}
-                <button onClick={handleExportPdf}>Download PDF</button>
-
-                {/* Ensure the modal close logic works */}
-                {showStudyTipsModal && (
-                    <StudyTipsModal tips={aiStudyTips} onClose={() => setShowStudyTipsModal(false)} />
-                )}
-            </main>
-
-            <footer>
-                <p>&copy; 2025 GradePro NG. All rights reserved.</p>
-            </footer>
-
-            {/* AI Chatbot */}
-            <AIChatbot
-                semesters={semesters}
-                overallCgpa={overallCgpa}
-                totalCreditUnitsAccumulated={totalCreditUnitsAccumulated}
-            />
-        </div>
-    );
-}
 
     // --- Handlers for Projected CGPA for Next Semester/Level ---
     const handleCalculateProjectedCgpa = () => {
@@ -841,8 +643,7 @@ function App() {
             setProjectedCoursesResults([{ name: 'Unrealistic Target', creditUnit: 0, requiredGrade: 'Too High' }]);
         } else if (requiredSGPA < 0) {
              setProjectedCoursesResults([{ name: 'Unrealistic Target', creditUnit: 0, requiredGrade: 'Too Low' }]);
-        }
-        else {
+        } else {
             for (let i = 0; i < numProjectedCourses; i++) {
                 newProjectedCourses.push({
                     name: `Projected Course ${i + 1}`,
@@ -851,6 +652,17 @@ function App() {
                 });
             }
             setProjectedCoursesResults(newProjectedCourses);
+        }
+    };
+
+    // Add export to PDF functionality
+    const handleExportPdf = () => {
+        // Since html2pdf might not be available in all environments, we'll use a simple fallback
+        if (typeof window !== 'undefined' && window.html2pdf) {
+            const element = document.querySelector("main");
+            window.html2pdf().from(element).save("CGPA_Summary.pdf");
+        } else {
+            alert("PDF export is not available in this environment.");
         }
     };
 
@@ -938,7 +750,6 @@ function App() {
                      <button className="clear-all-data-btn" onClick={handleClearAllData}>Clear All My Data</button>
                 </section>
 
-
                 <section className="target-cgpa-calculator">
                     <h2>Projected CGPA for Next Semester/Level</h2>
                     <p className="description-text">
@@ -992,13 +803,18 @@ function App() {
                         )}
                     </div>
                 </section>
+
+                <button onClick={handleExportPdf}>Download PDF</button>
+
+                {showStudyTipsModal && (
+                    <StudyTipsModal tips={aiStudyTips} onClose={() => setShowStudyTipsModal(false)} />
+                )}
             </main>
 
             <footer>
                 <p>&copy; 2025 GradePro NG. All rights reserved.</p>
             </footer>
 
-            {/* AI Chatbot */}
             <AIChatbot
                 semesters={semesters}
                 overallCgpa={overallCgpa}
@@ -1006,4 +822,6 @@ function App() {
             />
         </div>
     );
+}
 
+export default App;
