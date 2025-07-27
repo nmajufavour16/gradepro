@@ -1,5 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
-import courseDB from './courses.json';
+
+// Course database - inline to avoid import issues
+const courseDB = {
+  "100 Level": {
+    "First Semester": [
+      { "name": "MTH101", "creditUnit": 3 },
+      { "name": "PHY101", "creditUnit": 3 },
+      { "name": "GNS101", "creditUnit": 2 }
+    ],
+    "Second Semester": [
+      { "name": "CHM102", "creditUnit": 3 },
+      { "name": "CSC102", "creditUnit": 2 }
+    ]
+  },
+  "200 Level": {
+    "First Semester": [],
+    "Second Semester": []
+  },
+  "300 Level": {
+    "First Semester": [],
+    "Second Semester": []
+  },
+  "400 Level": {
+    "First Semester": [],
+    "Second Semester": []
+  }
+};
 
 // --- Core Calculation Functions ---
 /**
