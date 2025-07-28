@@ -1,20 +1,1052 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GradePro NG - CGPA Calculator and AI Study Help</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GradePro NG - CGPA Calculator and AI Study Help</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <style>
+        /* Reset and base styles */
+        * {
+            box-sizing: border-box;
+            border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        header {
+            background-color: #1f883d;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        section {
+            margin-bottom: 40px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 30px;
+        }
+
+        section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        h2, h3, h4 {
+            color: #0056b3;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        h2 { font-size: 2em; }
+        h3 { font-size: 1.5em; }
+        h4 { font-size: 1.2em; }
+
+        .input-group, .course-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .input-group label {
+            flex-basis: 120px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .input-group input,
+        .input-group select,
+        .course-row input,
+        .course-row select {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 150px;
+            background-color: #f9f9f9;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus,
+        .course-row input:focus,
+        .course-row select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        .read-only-input {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        button {
+            background-color: #0056b3;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+        }
+
+        button:hover {
+            background-color: #007bff;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+        }
+
+        .remove-course-btn {
+            background-color: #dc3545;
+            padding: 8px 12px;
+            font-size: 0.9em;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 5px;
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+        }
+
+        .remove-course-btn:hover {
+            background-color: #c82333;
+        }
+
+        .semester-header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .semester-header-controls h4 {
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .semester-buttons button {
+            padding: 8px 15px;
+            font-size: 0.9em;
+            margin-left: 8px;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .edit-semester-btn {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .edit-semester-btn:hover {
+            background-color: #e0a800;
+        }
+
+        .delete-semester-btn {
+            background-color: #dc3545;
+        }
+
+        .delete-semester-btn:hover {
+            background-color: #c82333;
+        }
+
+        .overall-cgpa {
+            text-align: center;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #e2f0d9;
+            border-radius: 10px;
+            border: 1px solid #a6d96a;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .overall-cgpa h3 {
+            color: #1f883d;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            margin-top: 0;
+        }
+
+        #overallCgpa {
+            font-weight: bold;
+            color: #0056b3;
+            font-size: 2.2em;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .semester-summary {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .semester-summary h4 {
+            color: #0056b3;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .semester-summary ul {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .semester-summary ul li {
+            padding: 8px 0;
+            border-bottom: 1px dotted #e0e0e0;
+            color: #444;
+        }
+
+        .semester-summary ul li:last-child {
+            border-bottom: none;
+        }
+
+        .no-data-message {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .clear-all-data-btn {
+            background-color: #dc3545;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .clear-all-data-btn:hover {
+            background-color: #c82333;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            opacity: 0.9;
+            color: white;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 0;
+            color: white;
+        }
+
+        .grade-distribution {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .grade-bar {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .grade-label {
+            width: 30px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .grade-progress {
+            flex: 1;
+            height: 25px;
+            background-color: #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-right: 15px;
+        }
+
+        .grade-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: white;
+        }
+
+        .grade-fill.grade-a { background: linear-gradient(90deg, #28a745, #20c997); }
+        .grade-fill.grade-b { background: linear-gradient(90deg, #17a2b8, #6610f2); }
+        .grade-fill.grade-c { background: linear-gradient(90deg, #ffc107, #fd7e14); }
+        .grade-fill.grade-d { background: linear-gradient(90deg, #fd7e14, #dc3545); }
+        .grade-fill.grade-e { background: linear-gradient(90deg, #dc3545, #6f42c1); }
+        .grade-fill.grade-f { background: linear-gradient(90deg, #6c757d, #495057); }
+
+        .export-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0 10px;
+        }
+
+        .export-btn:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+
+        .prediction-section {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .prediction-section h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+
+        .target-input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .target-input-group input {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            main { padding: 15px; }
+            
+            .input-group, .course-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            
+            .input-group label {
+                flex-basis: auto;
+                margin-bottom: 5px;
+            }
+            
+            .input-group input,
+            .input-group select,
+            .course-row input,
+            .course-row select {
+                width: 100%;
+                min-width: unset;
+            }
+            
+            .course-row .remove-course-btn {
+                margin-left: 0;
+                margin-top: 10px;
+                width: 100%;
+                border-radius: 8px;
+                height: auto;
+                padding: 10px;
+            }
+            
+            button {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
 </head>
-
 <body>
-  <div id="root"></div>
-  
-  <!-- Load html2pdf from CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <div id="root"></div>
 
-  <!-- Load the main app bundle -->
-  <script type="module" src="/src/main.jsx"></script>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Course database
+        const courseDB = {
+            "100 Level": {
+                "First Semester": [
+                    { "name": "MTH101", "creditUnit": 3 },
+                    { "name": "PHY101", "creditUnit": 3 },
+                    { "name": "GNS101", "creditUnit": 2 }
+                ],
+                "Second Semester": [
+                    { "name": "CHM102", "creditUnit": 3 },
+                    { "name": "CSC102", "creditUnit": 2 }
+                ]
+            },
+            "200 Level": {
+                "First Semester": [],
+                "Second Semester": []
+            },
+            "300 Level": {
+                "First Semester": [],
+                "Second Semester": []
+            },
+            "400 Level": {
+                "First Semester": [],
+                "Second Semester": []
+            }
+        };
+
+        // Utility functions
+        function getGradePoint(grade) {
+            const gradeMap = {
+                'A': 5.0, 'B': 4.0, 'C': 3.0, 'D': 2.0, 'E': 1.0, 'F': 0.0
+            };
+            return gradeMap[grade?.toUpperCase()] || 0.0;
+        }
+
+        function calculateSGPA(courses) {
+            if (!courses || courses.length === 0) return '0.00';
+            
+            let totalPoints = 0;
+            let totalUnits = 0;
+            
+            courses.forEach(course => {
+                const points = getGradePoint(course.grade) * course.creditUnit;
+                totalPoints += points;
+                totalUnits += course.creditUnit;
+            });
+            
+            return totalUnits > 0 ? (totalPoints / totalUnits).toFixed(2) : '0.00';
+        }
+
+        function calculateCGPA(semesters) {
+            if (!semesters || semesters.length === 0) {
+                return { cgpa: '0.00', totalCreditUnits: 0 };
+            }
+            
+            let totalPoints = 0;
+            let totalUnits = 0;
+            
+            semesters.forEach(semester => {
+                semester.courses?.forEach(course => {
+                    const points = getGradePoint(course.grade) * course.creditUnit;
+                    totalPoints += points;
+                    totalUnits += course.creditUnit;
+                });
+            });
+            
+            return {
+                cgpa: totalUnits > 0 ? (totalPoints / totalUnits).toFixed(2) : '0.00',
+                totalCreditUnits: totalUnits
+            };
+        }
+
+        // Calculate grade distribution
+        function calculateGradeDistribution(semesters) {
+            const gradeCount = { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
+            let totalCourses = 0;
+
+            semesters.forEach(semester => {
+                semester.courses?.forEach(course => {
+                    if (course.grade) {
+                        gradeCount[course.grade.toUpperCase()]++;
+                        totalCourses++;
+                    }
+                });
+            });
+
+            return { gradeCount, totalCourses };
+        }
+
+        // Calculate academic statistics
+        function calculateStats(semesters) {
+            if (!semesters || semesters.length === 0) {
+                return {
+                    totalSemesters: 0,
+                    totalCourses: 0,
+                    averageUnitsPerSemester: 0,
+                    highestSGPA: 0,
+                    lowestSGPA: 0
+                };
+            }
+
+            let totalCourses = 0;
+            let totalUnits = 0;
+            const sgpas = [];
+
+            semesters.forEach(semester => {
+                totalCourses += semester.courses?.length || 0;
+                semester.courses?.forEach(course => {
+                    totalUnits += course.creditUnit;
+                });
+                const sgpa = parseFloat(calculateSGPA(semester.courses));
+                if (sgpa > 0) sgpas.push(sgpa);
+            });
+
+            return {
+                totalSemesters: semesters.length,
+                totalCourses,
+                averageUnitsPerSemester: semesters.length > 0 ? Math.round(totalUnits / semesters.length) : 0,
+                highestSGPA: sgpas.length > 0 ? Math.max(...sgpas).toFixed(2) : '0.00',
+                lowestSGPA: sgpas.length > 0 ? Math.min(...sgpas).toFixed(2) : '0.00'
+            };
+        }
+
+        // Export data as JSON
+        function exportAsJSON(data) {
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'gradepro-data.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Export as text summary
+        function exportAsText(semesters, cgpa, totalUnits) {
+            let text = `GradePro NG - Academic Summary\n`;
+            text += `Generated on: ${new Date().toLocaleDateString()}\n\n`;
+            text += `Overall CGPA: ${cgpa}\n`;
+            text += `Total Credit Units: ${totalUnits}\n\n`;
+            
+            semesters.forEach((semester, index) => {
+                text += `${index + 1}. ${semester.semesterName}\n`;
+                text += `   SGPA: ${calculateSGPA(semester.courses)}\n`;
+                semester.courses?.forEach(course => {
+                    text += `   - ${course.name} (${course.creditUnit} units): ${course.grade}\n`;
+                });
+                text += `\n`;
+            });
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'gradepro-summary.txt';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+
+        // GradeDistribution Component
+        function GradeDistribution({ semesters }) {
+            const { gradeCount, totalCourses } = calculateGradeDistribution(semesters);
+            
+            if (totalCourses === 0) return null;
+
+            const grades = [
+                { grade: 'A', count: gradeCount.A, className: 'grade-a' },
+                { grade: 'B', count: gradeCount.B, className: 'grade-b' },
+                { grade: 'C', count: gradeCount.C, className: 'grade-c' },
+                { grade: 'D', count: gradeCount.D, className: 'grade-d' },
+                { grade: 'E', count: gradeCount.E, className: 'grade-e' },
+                { grade: 'F', count: gradeCount.F, className: 'grade-f' }
+            ];
+
+            return (
+                <div className="grade-distribution animate-fade-in">
+                    <h4>Grade Distribution</h4>
+                    {grades.map(({ grade, count, className }) => {
+                        const percentage = totalCourses > 0 ? (count / totalCourses) * 100 : 0;
+                        return (
+                            <div key={grade} className="grade-bar">
+                                <div className="grade-label">{grade}:</div>
+                                <div className="grade-progress">
+                                    <div 
+                                        className={`grade-fill ${className}`}
+                                        style={{ width: `${percentage}%` }}
+                                    >
+                                        {count > 0 && `${count} (${percentage.toFixed(1)}%)`}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            );
+        }
+
+        // StatsGrid Component
+        function StatsGrid({ semesters }) {
+            const stats = calculateStats(semesters);
+            
+            return (
+                <div className="stats-grid animate-fade-in">
+                    <div className="stat-card">
+                        <h4>Total Semesters</h4>
+                        <div className="stat-value">{stats.totalSemesters}</div>
+                    </div>
+                    <div className="stat-card">
+                        <h4>Total Courses</h4>
+                        <div className="stat-value">{stats.totalCourses}</div>
+                    </div>
+                    <div className="stat-card">
+                        <h4>Avg Units/Semester</h4>
+                        <div className="stat-value">{stats.averageUnitsPerSemester}</div>
+                    </div>
+                    <div className="stat-card">
+                        <h4>Highest SGPA</h4>
+                        <div className="stat-value">{stats.highestSGPA}</div>
+                    </div>
+                </div>
+            );
+        }
+
+        // CGPAPredictor Component
+        function CGPAPredictor({ currentCGPA, totalUnits }) {
+            const [targetCGPA, setTargetCGPA] = useState('');
+            const [futureUnits, setFutureUnits] = useState('');
+            const [prediction, setPrediction] = useState(null);
+
+            const calculateRequiredGPA = () => {
+                const target = parseFloat(targetCGPA);
+                const future = parseInt(futureUnits);
+                const current = parseFloat(currentCGPA);
+
+                if (!target || !future || !current || target <= 0 || future <= 0) {
+                    setPrediction({ error: 'Please enter valid values' });
+                    return;
+                }
+
+                if (target > 5.0) {
+                    setPrediction({ error: 'Target CGPA cannot exceed 5.0' });
+                    return;
+                }
+
+                const currentPoints = current * totalUnits;
+                const totalFutureUnits = totalUnits + future;
+                const requiredPoints = target * totalFutureUnits;
+                const neededPoints = requiredPoints - currentPoints;
+                const requiredGPA = neededPoints / future;
+
+                if (requiredGPA > 5.0) {
+                    setPrediction({
+                        error: `Impossible to achieve ${target} CGPA. Maximum possible: ${((currentPoints + (5.0 * future)) / totalFutureUnits).toFixed(2)}`
+                    });
+                } else if (requiredGPA < 0) {
+                    setPrediction({
+                        success: `You've already exceeded your target! Current CGPA: ${current}`
+                    });
+                } else {
+                    setPrediction({
+                        success: `You need an average GPA of ${requiredGPA.toFixed(2)} in the next ${future} units to achieve ${target} CGPA`
+                    });
+                }
+            };
+
+            if (totalUnits === 0) return null;
+
+            return (
+                <div className="prediction-section animate-fade-in">
+                    <h3>🎯 CGPA Predictor</h3>
+                    <p>Calculate what GPA you need to achieve your target CGPA</p>
+                    
+                    <div className="target-input-group">
+                        <label>Target CGPA:</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="5"
+                            value={targetCGPA}
+                            onChange={(e) => setTargetCGPA(e.target.value)}
+                            placeholder="e.g., 4.5"
+                        />
+                        <label>Future Credit Units:</label>
+                        <input
+                            type="number"
+                            min="1"
+                            value={futureUnits}
+                            onChange={(e) => setFutureUnits(e.target.value)}
+                            placeholder="e.g., 24"
+                        />
+                        <button onClick={calculateRequiredGPA}>Calculate</button>
+                    </div>
+
+                    {prediction && (
+                        <div className={`prediction-result ${prediction.error ? 'error' : 'success'}`}>
+                            <p>{prediction.error || prediction.success}</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        function CourseInputRow({ course, onCourseChange, onRemoveCourse, availableCourses, onAddFromDropdown }) {
+            return (
+                <div className="course-row">
+                    <input
+                        type="text"
+                        placeholder="Course Code (e.g., MTH101)"
+                        value={course.name || ''}
+                        onChange={(e) => onCourseChange(course.id, 'name', e.target.value)}
+                    />
+                    <select
+                        value={course.creditUnit || 1}
+                        onChange={(e) => onCourseChange(course.id, 'creditUnit', parseInt(e.target.value))}
+                    >
+                        <option value={1}>1 Units</option>
+                        <option value={2}>2 Units</option>
+                        <option value={3}>3 Units</option>
+                        <option value={4}>4 Units</option>
+                        <option value={5}>5 Units</option>
+                    </select>
+                    <select
+                        value={course.grade || ''}
+                        onChange={(e) => onCourseChange(course.id, 'grade', e.target.value)}
+                    >
+                        <option value="">Select Grade</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                        <option value="E">E</option>
+                        <option value="F">F</option>
+                    </select>
+                    <select onChange={onAddFromDropdown}>
+                        <option value="">Select course...</option>
+                        {availableCourses.map(courseOption => (
+                            <option key={courseOption.name} value={`${courseOption.name}|${courseOption.creditUnit}`}>
+                                {courseOption.name} ({courseOption.creditUnit} Units)
+                            </option>
+                        ))}
+                    </select>
+                    <button className="remove-course-btn" onClick={() => onRemoveCourse(course.id)}>
+                        ×
+                    </button>
+                </div>
+            );
+        }
+
+        // SemesterSummary Component
+        function SemesterSummary({ semester, sgpa, onDeleteSemester }) {
+            return (
+                <div className="semester-summary">
+                    <div className="semester-header-controls">
+                        <h4>{semester.semesterName}: SGPA = {sgpa}</h4>
+                        <div className="semester-buttons">
+                            <button className="edit-semester-btn" onClick={() => alert('Edit functionality coming soon!')}>
+                                Edit
+                            </button>
+                            <button className="delete-semester-btn" onClick={() => onDeleteSemester(semester.id)}>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    <ul>
+                        {semester.courses?.map((c, index) => (
+                            <li key={index}>
+                                {c.name} ({c.creditUnit} units): {c.grade}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            );
+        }
+
+        // Main App Component
+        function App() {
+            const [semesters, setSemesters] = useState([]);
+            const [selectedLevel, setSelectedLevel] = useState('100 Level');
+            const [selectedSemesterType, setSelectedSemesterType] = useState('First Semester');
+            const [currentSemesterCourses, setCurrentSemesterCourses] = useState([
+                { id: generateId(), name: '', creditUnit: 1, grade: '' }
+            ]);
+
+            const availableCourses = courseDB[selectedLevel]?.[selectedSemesterType] || [];
+            const { cgpa: overallCgpa, totalCreditUnits } = calculateCGPA(semesters);
+
+            const handleAddFromDropdown = (e) => {
+                const [name, creditUnit] = e.target.value.split("|");
+                if (!name) return;
+                
+                setCurrentSemesterCourses(prev => [...prev, {
+                    id: generateId(),
+                    name,
+                    creditUnit: parseInt(creditUnit),
+                    grade: ''
+                }]);
+                e.target.value = '';
+            };
+
+            const handleAddCourseRow = () => {
+                setCurrentSemesterCourses(prev => [...prev, { 
+                    id: generateId(), 
+                    name: '', 
+                    creditUnit: 1, 
+                    grade: '' 
+                }]);
+            };
+
+            const handleRemoveCourseRow = (id) => {
+                setCurrentSemesterCourses(prev => prev.filter(course => course.id !== id));
+            };
+
+            const handleCourseChange = (id, field, value) => {
+                setCurrentSemesterCourses(prev => 
+                    prev.map(course => 
+                        course.id === id ? { ...course, [field]: value } : course
+                    )
+                );
+            };
+
+            const handleAddSemester = () => {
+                const validCourses = currentSemesterCourses.filter(
+                    c => c.name?.trim() && c.creditUnit > 0 && c.grade
+                );
+
+                if (validCourses.length === 0) {
+                    alert("Please add at least one valid course for the semester.");
+                    return;
+                }
+
+                const newSemester = {
+                    id: generateId(),
+                    semesterName: `${selectedLevel} - ${selectedSemesterType}`,
+                    courses: validCourses
+                };
+
+                setSemesters(prev => [...prev, newSemester]);
+                setCurrentSemesterCourses([{ id: generateId(), name: '', creditUnit: 1, grade: '' }]);
+            };
+
+            const handleDeleteSemester = (idToDelete) => {
+                if (window.confirm("Are you sure you want to delete this semester?")) {
+                    setSemesters(prev => prev.filter(sem => sem.id !== idToDelete));
+                }
+            };
+
+            const handleClearAllData = () => {
+                if (window.confirm("Are you sure you want to clear ALL your academic data?")) {
+                    setSemesters([]);
+                    alert("All data cleared successfully!");
+                }
+            };
+
+            return (
+                <div>
+                    <header>
+                        <h1>GradePro NG</h1>
+                        <p>Your academic progress, simplified.</p>
+                    </header>
+
+                    <main>
+                        <section className="semester-input">
+                            <h2>Add Semester Courses</h2>
+                            
+                            <div className="input-group">
+                                <label htmlFor="levelSelect">Level:</label>
+                                <select
+                                    id="levelSelect"
+                                    value={selectedLevel}
+                                    onChange={(e) => setSelectedLevel(e.target.value)}
+                                >
+                                    <option value="100 Level">100 Level</option>
+                                    <option value="200 Level">200 Level</option>
+                                    <option value="300 Level">300 Level</option>
+                                    <option value="400 Level">400 Level</option>
+                                </select>
+                            </div>
+
+                            <div className="input-group">
+                                <label htmlFor="semesterTypeSelect">Semester Type:</label>
+                                <select
+                                    id="semesterTypeSelect"
+                                    value={selectedSemesterType}
+                                    onChange={(e) => setSelectedSemesterType(e.target.value)}
+                                >
+                                    <option value="First Semester">First Semester</option>
+                                    <option value="Second Semester">Second Semester</option>
+                                </select>
+                            </div>
+
+                            <div className="input-group">
+                                <label>Semester Name:</label>
+                                <input
+                                    type="text"
+                                    value={`${selectedLevel} - ${selectedSemesterType}`}
+                                    readOnly
+                                    className="read-only-input"
+                                />
+                            </div>
+
+                            <div id="coursesContainer">
+                                {currentSemesterCourses.map(course => (
+                                    <CourseInputRow
+                                        key={course.id}
+                                        course={course}
+                                        onCourseChange={handleCourseChange}
+                                        onRemoveCourse={handleRemoveCourseRow}
+                                        availableCourses={availableCourses}
+                                        onAddFromDropdown={handleAddFromDropdown}
+                                    />
+                                ))}
+                            </div>
+
+                            <button onClick={handleAddCourseRow}>Add Another Course</button>
+                            <button onClick={handleAddSemester}>Calculate Semester & Add</button>
+                        </section>
+
+                        <section className="results">
+                            <h2>Your Academic Summary</h2>
+                            
+                            {semesters.length > 0 && (
+                                <StatsGrid semesters={semesters} />
+                            )}
+                            
+                            <div id="semesterResults">
+                                {semesters.length === 0 ? (
+                                    <p className="no-data-message">
+                                        No semesters added yet. Start by adding your first semester!
+                                    </p>
+                                ) : (
+                                    semesters.map(sem => (
+                                        <SemesterSummary
+                                            key={sem.id}
+                                            semester={sem}
+                                            sgpa={calculateSGPA(sem.courses)}
+                                            onDeleteSemester={handleDeleteSemester}
+                                        />
+                                    ))
+                                )}
+                            </div>
+
+                            <div className="overall-cgpa">
+                                <h3>Overall CGPA: <span id="overallCgpa">{overallCgpa}</span></h3>
+                                <p>Total Credit Units: {totalCreditUnits}</p>
+                            </div>
+
+                            {semesters.length > 0 && (
+                                <>
+                                    <GradeDistribution semesters={semesters} />
+                                    <CGPAPredictor currentCGPA={overallCgpa} totalUnits={totalCreditUnits} />
+                                    
+                                    <div className="export-section">
+                                        <h4>Export Your Data</h4>
+                                        <button 
+                                            className="export-btn"
+                                            onClick={() => exportAsJSON(semesters)}
+                                        >
+                                            📄 Export as JSON
+                                        </button>
+                                        <button 
+                                            className="export-btn"
+                                            onClick={() => exportAsText(semesters, overallCgpa, totalCreditUnits)}
+                                        >
+                                            📝 Export as Text
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+
+                            <button className="clear-all-data-btn" onClick={handleClearAllData}>
+                                Clear All My Data
+                            </button>
+                        </section>
+                    </main>
+
+                    <footer>
+                        <p>&copy; 2025 GradePro NG. All rights reserved.</p>
+                    </footer>
+                </div>
+            );
+        }
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
 </body>
-
 </html>
